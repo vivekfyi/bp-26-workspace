@@ -21,7 +21,6 @@ export const envSchema = z.object({
   PORT: numberFromString.default(3000),
   API_PREFIX: z.string().default('api'),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
-  REDIS_URL: z.string().min(1, 'REDIS_URL is required'),
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default('gpt-4o-mini'),
   FEED_SYNC_INTERVAL_MINUTES: numberFromString.default(30),

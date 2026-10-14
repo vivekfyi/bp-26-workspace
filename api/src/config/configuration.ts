@@ -13,9 +13,6 @@ export function buildConfiguration(env: EnvironmentVariables) {
     database: {
       url: env.DATABASE_URL,
     },
-    redis: {
-      url: env.REDIS_URL,
-    },
     ai: {
       provider: 'openai',
       apiKey: env.OPENAI_API_KEY,

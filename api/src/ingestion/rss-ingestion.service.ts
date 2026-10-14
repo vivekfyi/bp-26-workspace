@@ -1,17 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Job } from 'bullmq';
 import Parser from 'rss-parser';
 import { Prisma, ArticleStatus } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { PipelineQueueService } from '../pipeline/pipeline-queue.service.js';
-import {
-  PROCESS_ARTICLE_JOB,
-  SYNC_ALL_SOURCES_JOB,
-} from '../pipeline/pipeline.constants.js';
-import {
-  ProcessArticleJobData,
-  SyncSummary,
-} from '../pipeline/pipeline.types.js';
+import { SyncSummary } from '../pipeline/pipeline.types.js';
+import { ExtractorService } from '../extraction/extractor.service.js';
+import { AiEnrichmentService } from '../enrichment/ai-enrichment.service.js';
 
 @Injectable()
 export class RssIngestionService {
@@ -20,18 +13,12 @@ export class RssIngestionService {
 
   constructor(
     @Inject(PrismaService) private readonly prismaService: PrismaService,
-    @Inject(PipelineQueueService) private readonly pipelineQueueService: PipelineQueueService,
+    @Inject(ExtractorService) private readonly extractorService: ExtractorService,
+    @Inject(AiEnrichmentService) private readonly aiEnrichmentService: AiEnrichmentService,
   ) {}
 
-  async triggerSync(): Promise<Job> {
-    return this.pipelineQueueService.syncQueue.add(
-      SYNC_ALL_SOURCES_JOB,
-      {},
-      {
-        removeOnComplete: 50,
-        removeOnFail: 100,
-      },
-    );
+  async triggerSync(): Promise<SyncSummary> {
+    return this.syncAllSources();
   }
 
   async syncAllSources(): Promise<SyncSummary> {
@@ -96,23 +83,13 @@ export class RssIngestionService {
             continue;
           }
 
-          const jobPayload: ProcessArticleJobData = {
+          await this.processArticle({
             articleId: article.id,
             sourceCategory: source.category,
             sourceTopics: source.topics.map((sourceTopic) => sourceTopic.topic.slug),
             sourceLicenseType: source.licenseType,
             sourceLanguage: source.language,
             rssContent: this.resolveSnippet(entry),
-          };
-
-          await this.pipelineQueueService.articleQueue.add(PROCESS_ARTICLE_JOB, jobPayload, {
-            removeOnComplete: 200,
-            removeOnFail: 300,
-            attempts: 2,
-            backoff: {
-              type: 'exponential',
-              delay: 5000,
-            },
           });
 
           summary.enqueued += 1;
@@ -129,6 +106,53 @@ export class RssIngestionService {
     }
 
     return summary;
+  }
+
+  private async processArticle(payload: {
+    articleId: string;
+    sourceCategory: string;
+    sourceTopics: string[];
+    sourceLicenseType: string;
+    sourceLanguage: string;
+    rssContent: string | null;
+  }): Promise<void> {
+    const article = await this.prismaService.article.findUnique({
+      where: { id: payload.articleId },
+      include: { source: true },
+    });
+
+    if (!article) return;
+
+    try {
+      const extracted = await this.extractorService.extractArticle(
+        article.originalUrl,
+        payload.rssContent,
+        article.author,
+      );
+      const enriched = await this.aiEnrichmentService.enrichArticle(
+        extracted.fullText,
+        [payload.sourceCategory, ...payload.sourceTopics, `license:${payload.sourceLicenseType}`, `language:${payload.sourceLanguage}`].join(', '),
+      );
+      await this.prismaService.article.update({
+        where: { id: article.id },
+        data: {
+          author: extracted.author,
+          leadImageUrl: extracted.leadImageUrl,
+          fullText: extracted.fullText,
+          summaryShort: enriched.summaryShort,
+          summaryBullets: enriched.summaryBullets,
+          tags: enriched.tags,
+          readingTimeMinutes: extracted.readingTimeMinutes,
+          status: ArticleStatus.PROCESSED,
+        },
+      });
+    } catch (error) {
+      await this.prismaService.article.update({
+        where: { id: article.id },
+        data: { status: ArticleStatus.FAILED },
+      });
+      this.logger.warn(`Failed processing article ${article.id}: ${(error as Error).message}`);
+    }
   }
 
   private async createPendingArticle(input: {

@@ -2,14 +2,15 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ArticleStatus } from '../src/generated/prisma/enums.js';
 import { AppModule } from '../src/app.module.js';
-import { PipelineQueueService } from '../src/pipeline/pipeline-queue.service.js';
-import { PROCESS_ARTICLE_JOB } from '../src/pipeline/pipeline.constants.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import { ExtractorService } from '../src/extraction/extractor.service.js';
+import { AiEnrichmentService } from '../src/enrichment/ai-enrichment.service.js';
 
 async function main() {
   const app = await NestFactory.createApplicationContext(AppModule, { logger: false });
   const prismaService = app.get(PrismaService);
-  const pipelineQueueService = app.get(PipelineQueueService);
+  const extractorService = app.get(ExtractorService);
+  const aiEnrichmentService = app.get(AiEnrichmentService);
   const limit = Number(process.env.REPROCESS_LIMIT ?? 100);
 
   const articles = await prismaService.article.findMany({
@@ -33,26 +34,32 @@ async function main() {
       data: { status: ArticleStatus.PENDING },
     });
 
-    await pipelineQueueService.articleQueue.add(
-      PROCESS_ARTICLE_JOB,
-      {
-        articleId: article.id,
-        sourceCategory: article.source.category,
-        sourceTopics: article.source.topics.map((sourceTopic) => sourceTopic.topic.slug),
-        sourceLicenseType: article.source.licenseType,
-        sourceLanguage: article.source.language,
-        rssContent: null,
-      },
-      {
-        removeOnComplete: 200,
-        removeOnFail: 300,
-        attempts: 2,
-        backoff: { type: 'exponential', delay: 5000 },
-      },
-    );
+    try {
+      const extracted = await extractorService.extractArticle(article.originalUrl, null, article.author);
+      const enriched = await aiEnrichmentService.enrichArticle(
+        extracted.fullText,
+        [article.source.category, ...article.source.topics.map((sourceTopic) => sourceTopic.topic.slug)].join(', '),
+      );
+      await prismaService.article.update({
+        where: { id: article.id },
+        data: {
+          author: extracted.author,
+          leadImageUrl: extracted.leadImageUrl,
+          fullText: extracted.fullText,
+          summaryShort: enriched.summaryShort,
+          summaryBullets: enriched.summaryBullets,
+          tags: enriched.tags,
+          readingTimeMinutes: extracted.readingTimeMinutes,
+          status: ArticleStatus.PROCESSED,
+        },
+      });
+    } catch (error) {
+      await prismaService.article.update({ where: { id: article.id }, data: { status: ArticleStatus.FAILED } });
+      console.error(`Failed to reprocess ${article.id}:`, error);
+    }
   }
 
-  console.log(`Queued ${articles.length} article(s) for full-content reprocessing.`);
+  console.log(`Reprocessed ${articles.length} article(s).`);
   await app.close();
 }
 

@@ -66,13 +66,11 @@ export class SourcesService {
   }
 
   async triggerSync() {
-    const job = await this.rssIngestionService.triggerSync();
+    const summary = await this.rssIngestionService.triggerSync();
 
     return {
-      status: 'queued',
-      queue: job.queueName,
-      jobId: job.id,
-      jobName: job.name,
+      status: 'completed',
+      summary,
       timestamp: new Date().toISOString(),
     };
   }

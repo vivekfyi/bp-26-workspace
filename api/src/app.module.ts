@@ -7,7 +7,6 @@ import { AppService } from './app.service.js';
 import { AppConfigModule } from './config/config.module.js';
 import { createWinstonOptions } from './common/logging/winston.config.js';
 import { PrismaModule } from './prisma/prisma.module.js';
-import { RedisModule } from './redis/redis.module.js';
 import { HealthModule } from './health/health.module.js';
 import { ExampleModule } from './example/example.module.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -17,7 +16,6 @@ import { OtpModule } from './otp/otp.module.js';
 import { StorageModule } from './storage/storage.module.js';
 import { WorkerModule } from './worker/worker.module.js';
 import { CommandsModule } from './commands/commands.module.js';
-import { PipelineModule } from './pipeline/pipeline.module.js';
 import { IngestionModule } from './ingestion/ingestion.module.js';
 import { SourcesModule } from './sources/sources.module.js';
 import { ArticlesModule } from './articles/articles.module.js';
@@ -46,8 +44,6 @@ function envFlag(name: string): boolean {
       ],
     }),
     PrismaModule,
-    RedisModule,
-    PipelineModule,
     IngestionModule,
     HealthModule,
     SourcesModule,
