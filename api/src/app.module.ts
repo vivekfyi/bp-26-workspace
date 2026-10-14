@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { WinstonModule } from 'nest-winston';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AppConfigModule } from './config/config.module.js';
 import { createWinstonOptions } from './common/logging/winston.config.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { RedisModule } from './redis/redis.module.js';
 import { HealthModule } from './health/health.module.js';
 import { ExampleModule } from './example/example.module.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -17,6 +17,10 @@ import { OtpModule } from './otp/otp.module.js';
 import { StorageModule } from './storage/storage.module.js';
 import { WorkerModule } from './worker/worker.module.js';
 import { CommandsModule } from './commands/commands.module.js';
+import { PipelineModule } from './pipeline/pipeline.module.js';
+import { IngestionModule } from './ingestion/ingestion.module.js';
+import { SourcesModule } from './sources/sources.module.js';
+import { ArticlesModule } from './articles/articles.module.js';
 
 function envFlag(name: string): boolean {
   return process.env[name]?.toLowerCase() === 'true';
@@ -42,7 +46,12 @@ function envFlag(name: string): boolean {
       ],
     }),
     PrismaModule,
+    RedisModule,
+    PipelineModule,
+    IngestionModule,
     HealthModule,
+    SourcesModule,
+    ArticlesModule,
     ExampleModule,
     AuthModule.register(envFlag('AUTH_ENABLED')),
     UsersModule.register(envFlag('AUTH_ENABLED')),
@@ -55,10 +64,6 @@ function envFlag(name: string): boolean {
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
   ],
 })
 export class AppModule {}

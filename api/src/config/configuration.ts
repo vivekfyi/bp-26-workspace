@@ -13,6 +13,18 @@ export function buildConfiguration(env: EnvironmentVariables) {
     database: {
       url: env.DATABASE_URL,
     },
+    redis: {
+      url: env.REDIS_URL,
+    },
+    ai: {
+      provider: 'openai',
+      apiKey: env.OPENAI_API_KEY,
+      model: env.OPENAI_MODEL,
+    },
+    ingestion: {
+      syncIntervalMinutes: env.FEED_SYNC_INTERVAL_MINUTES,
+      extractionTimeoutMs: env.ARTICLE_EXTRACTION_TIMEOUT_MS,
+    },
     rateLimit: {
       ttl: env.RATE_LIMIT_TTL,
       limit: env.RATE_LIMIT_LIMIT,

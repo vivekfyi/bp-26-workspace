@@ -1,63 +1,127 @@
-# API Boilerplate (Phase 3 Scaffold)
+# Playlists for Articles API (Phase 1)
 
-This is the Phase 3 scaffold for the reusable API boilerplate using:
+Phase 1 implements an automated ingestion, extraction, and AI enrichment pipeline using:
 
-- NestJS 12
-- Prisma 7
-- PostgreSQL
-- Native ESM (`NodeNext`)
+- NestJS 12 + TypeScript
+- Prisma 7 + PostgreSQL
+- BullMQ + Redis
+- RSS parsing via `rss-parser`
+- Full article extraction via `@extractus/article-extractor`
+- AI enrichment via OpenAI SDK (`gpt-4o-mini` by default)
 
-## Included in this scaffold
+## Features delivered
 
-- Core app bootstrap and module composition
-- Environment validation and config namespaces
-- Prisma module/service lifecycle management
-- Global validation, exception filter, serializer, and throttling
-- Winston logger wiring
-- Swagger setup
-- Health endpoint (`/api/health`)
-- Example module (`/api/examples`)
-- Optional module stubs (auth/users, mail/otp, storage, worker/commands)
+- `sources` + `articles` database schema with migration
+- Source + topic seed script with curated multi-niche feeds and license metadata
+- Queue-based RSS ingestion and per-article processing
+- Deduplication by unique `articles.original_url`
+- Full-text extraction + lead image + reading time estimation
+- AI enrichment into:
+  - ~50-word summary
+  - 3 bullet key takeaways
+  - category tags
+- Topic-aware enrichment context (category + source topics + license + language)
+- Graceful failure handling (`status = FAILED`) for extraction/enrichment issues
+- API endpoints:
+  - `GET /api/health` (DB + Redis)
+  - `GET /api/sources` (list/filter by category/topic/license)
+  - `POST /api/sources/sync`
+  - `GET /api/articles?page=1&limit=20&category=...&topic=...&licenseType=...`
+  - `GET /api/articles/:id` (full extracted article content)
 
-## Quick start
+## Environment
 
-1. Copy `.env.example` to `.env`.
-   - Keep `.env` local-only and never commit real credentials.
-2. Start PostgreSQL:
+Copy `.env.example` to `.env` and configure:
 
-   ```bash
-   docker compose up -d
-   ```
+- `DATABASE_URL` (required)
+- `REDIS_URL` (required)
+- `OPENAI_API_KEY` (recommended; if missing, fallback enrichment is used)
+- `OPENAI_MODEL` (default: `gpt-4o-mini`)
+- `FEED_SYNC_INTERVAL_MINUTES` (default: `30`)
+- `ARTICLE_EXTRACTION_TIMEOUT_MS` (default: `15000`)
 
-3. Install dependencies:
+## Local setup
 
-   ```bash
-   npm install
-   ```
+```bash
+docker compose up -d
+npm install
+npm run prisma:generate
+npm run prisma:migrate
+npm run prisma:seed
+```
 
-4. Generate Prisma client and run migrations:
+## Run services
 
-   ```bash
-   npm run prisma:generate
-   npm run prisma:migrate
-   ```
+### API server
 
-5. Start development server:
+```bash
+npm run start:dev
+```
 
-   ```bash
-   npm run start:dev
-   ```
+The API server also launches the Next.js web UI from the same process. Open `http://localhost:3000/` for the reading dashboard. NestJS routes remain under `/api/*`, and Swagger remains available at `/api/docs`.
 
-Swagger is available at `/api/docs` when `SWAGGER_ENABLED=true`.
+### Production build
 
-## Testing (Jest + ESM)
+```bash
+npm run build
+npm start
+```
 
-- Unit tests run via `jest.config.mjs`.
-- E2E tests run via `jest.e2e.config.mjs`.
-- Scripts use Node's ESM vm-modules mode for NestJS 12 compatibility.
+The custom server delegates `/api/*` to NestJS and all other routes to the Next.js App Router. The UI lives in `web/` and uses the existing articles, sources, sync, and health endpoints.
 
-## Phase alignment
+### Worker (polling + processing)
 
-- Phase 1: Inventory and extraction boundary (completed)
-- Phase 2: Edition matrix and capability boundaries (completed)
-- Phase 3: Core scaffold with optional capability stubs (this deliverable)
+Run worker in a separate terminal:
+
+```bash
+npm run start:worker:dev
+```
+
+The worker:
+
+- periodically enqueues feed sync jobs
+- consumes sync jobs
+- enqueues article processing jobs
+- consumes article processing jobs
+
+## Manual verification flow
+
+1. Explore seeded sources:
+
+```bash
+curl "http://localhost:3000/api/sources?page=1&limit=20"
+```
+
+2. Trigger sync:
+
+```bash
+curl -X POST http://localhost:3000/api/sources/sync
+```
+
+3. Check processed articles:
+
+```bash
+curl "http://localhost:3000/api/articles?page=1&limit=10&topic=ai"
+```
+
+To requeue existing articles that do not have extracted content:
+
+```bash
+REPROCESS_LIMIT=100 npm run articles:reprocess
+```
+
+4. Health check:
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+## Notes
+
+- Queue names:
+  - `ingestion-sync`
+  - `article-processing`
+- Job names:
+  - `sync-all-sources`
+  - `process-article`
+- Failed extractions/enrichments are persisted with `FAILED` status and do not crash workers.

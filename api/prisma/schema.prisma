@@ -7,10 +7,99 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ArticleStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+enum ContentLicense {
+  PUBLIC_DOMAIN
+  CC0
+  CC_BY
+  CC_BY_SA
+  CC_BY_NC
+  CC_BY_NC_SA
+  CC_BY_ND
+  OPEN_GOV
+  MIXED_UNKNOWN
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   passwordHash String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model Source {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  feedUrl      String    @unique @map("feed_url")
+  siteUrl      String    @map("site_url")
+  category     String
+  language     String    @default("en")
+  licenseType  ContentLicense @default(MIXED_UNKNOWN) @map("license_type")
+  trustScore   Int       @default(50) @map("trust_score")
+  lastPolledAt DateTime? @map("last_polled_at")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  articles Article[]
+  topics   SourceTopic[]
+
+  @@map("sources")
+}
+
+model Topic {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  sources SourceTopic[]
+
+  @@map("topics")
+}
+
+model SourceTopic {
+  sourceId  String   @map("source_id") @db.Uuid
+  topicId   String   @map("topic_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  source Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  topic  Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([sourceId, topicId])
+  @@index([topicId], map: "idx_source_topics_topic_id")
+  @@map("source_topics")
+}
+
+model Article {
+  id                 String        @id @default(uuid()) @db.Uuid
+  sourceId           String        @map("source_id") @db.Uuid
+  originalUrl        String        @unique @map("original_url")
+  title              String
+  author             String?
+  publishedAt        DateTime      @map("published_at")
+  leadImageUrl       String?       @map("lead_image_url")
+  fullText           String?       @db.Text @map("full_text")
+  summaryShort       String?       @db.Text @map("summary_short")
+  summaryBullets     Json?         @map("summary_bullets")
+  tags               Json?
+  readingTimeMinutes Int?          @map("reading_time_minutes")
+  status             ArticleStatus @default(PENDING)
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  source Source @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+
+  @@index([sourceId], map: "idx_articles_source_id")
+  @@index([status, publishedAt(sort: Desc)], map: "idx_articles_status_published_at")
+  @@map("articles")
 }

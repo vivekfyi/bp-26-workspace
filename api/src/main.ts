@@ -1,15 +1,36 @@
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import express from 'express';
 import helmet from 'helmet';
+import next from 'next';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { createServer } from 'node:http';
+import { resolve } from 'node:path';
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './filters/http-exception.filter.js';
 import { PrismaService } from './prisma/prisma.service.js';
 
+type NextApplication = {
+  prepare: () => Promise<void>;
+  getRequestHandler: () => (request: express.Request, response: express.Response) => void;
+};
+
+type NextFactory = (options: { dev: boolean; dir: string }) => NextApplication;
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const webServer = express();
+  const createNextApp = next as unknown as NextFactory;
+  const nextApp = createNextApp({
+    dev: process.env.NODE_ENV !== 'production',
+    dir: resolve(process.cwd(), 'web'),
+  });
+
+  await nextApp.prepare();
+
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(webServer), {
     bufferLogs: true,
   });
 
@@ -18,7 +39,27 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  app.use(helmet());
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          baseUri: ["'self'"],
+          connectSrc: ["'self'", ...(isDevelopment ? ['ws:', 'http:'] : [])],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+          formAction: ["'self'"],
+          frameAncestors: ["'self'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          objectSrc: ["'none'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", ...(isDevelopment ? ["'unsafe-eval'"] : [])],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          upgradeInsecureRequests: null,
+        },
+      },
+    }),
+  );
 
   app.enableCors({
     origin: configService.get<string>('app.corsOrigin') ?? '*',
@@ -57,7 +98,15 @@ async function bootstrap() {
   await prismaService.enableShutdownHooks(app);
 
   const port = configService.get<number>('app.port') ?? 3000;
-  await app.listen(port);
+  const handleNextRequest = nextApp.getRequestHandler();
+
+  await app.init();
+
+  webServer.use((request, response) => handleNextRequest(request, response));
+
+  await new Promise<void>((resolveServer) => {
+    createServer(webServer).listen(port, resolveServer);
+  });
 }
 
 bootstrap();

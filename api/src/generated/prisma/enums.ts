@@ -9,7 +9,25 @@
 * 🟢 You can import this file directly.
 */
 
+export const ArticleStatus = {
+  PENDING: 'PENDING',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED'
+} as const
+
+export type ArticleStatus = (typeof ArticleStatus)[keyof typeof ArticleStatus]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const ContentLicense = {
+  PUBLIC_DOMAIN: 'PUBLIC_DOMAIN',
+  CC0: 'CC0',
+  CC_BY: 'CC_BY',
+  CC_BY_SA: 'CC_BY_SA',
+  CC_BY_NC: 'CC_BY_NC',
+  CC_BY_NC_SA: 'CC_BY_NC_SA',
+  CC_BY_ND: 'CC_BY_ND',
+  OPEN_GOV: 'OPEN_GOV',
+  MIXED_UNKNOWN: 'MIXED_UNKNOWN'
+} as const
+
+export type ContentLicense = (typeof ContentLicense)[keyof typeof ContentLicense]

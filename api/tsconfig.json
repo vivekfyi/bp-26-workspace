@@ -27,6 +27,7 @@
     "src",
     "test",
     "prisma/seed.ts",
+    "prisma/reprocess-articles.ts",
     "prisma.config.ts"
   ]
 }
