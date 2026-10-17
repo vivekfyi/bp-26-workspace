@@ -9,7 +9,7 @@
   "scripts": {
     "build": "npm run prisma:generate && tsc -p tsconfig.build.json && next build web",
     "start": "node dist/src/main.js",
-    "start:dev": "tsx watch src/main.ts",
+    "start:dev": "sh -c 'pids=$(lsof -ti tcp:3004); if [ -n \"$pids\" ]; then kill $pids; fi; exec tsx watch src/main.ts'",
     "start:worker": "WORKER_ENABLED=true tsx src/worker.main.ts",
     "start:worker:dev": "WORKER_ENABLED=true tsx watch src/worker.main.ts",
     "start:debug": "tsx watch --inspect src/main.ts",
@@ -24,10 +24,13 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
+    "prisma:seed:verge": "tsx prisma/seed-verge.ts",
     "articles:reprocess": "tsx prisma/reprocess-articles.ts",
     "web:dev": "next dev web"
   },
   "dependencies": {
+    "@clerk/backend": "^3.25.0",
+    "@clerk/nextjs": "^7.9.17",
     "@extractus/article-extractor": "^8.0.9",
     "@nestjs/common": "^12.0.0",
     "@nestjs/config": "^12.0.1",

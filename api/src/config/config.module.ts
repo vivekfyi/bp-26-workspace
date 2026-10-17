@@ -8,6 +8,7 @@ import { validateEnvironment } from './env.schema.js';
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
+      envFilePath: ['.env.local', '.env'],
       validate: validateEnvironment,
       load: [() => buildConfiguration(validateEnvironment(process.env))],
     }),

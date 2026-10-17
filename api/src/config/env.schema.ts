@@ -37,6 +37,8 @@ export const envSchema = z.object({
   AUTH_JWT_SECRET: z.string().default('change-me'),
   AUTH_JWT_ACCESS_TTL: z.string().default('15m'),
   AUTH_JWT_REFRESH_TTL: z.string().default('7d'),
+  CLERK_SECRET_KEY: z.string().optional(),
+  CLERK_ADMIN_USER_IDS: z.string().default(''),
 
   MAIL_ENABLED: booleanFromString.default(false),
   OTP_ENABLED: booleanFromString.default(false),

@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "name": "Scroll Zero",
+      "priority": 1,
+      "items": [
+        {
+          "name": "Refresh feed",
+          "priority": 1,
+          "action": "./bin/scrollzero.sh",
+          "params": "refresh",
+          "exitmenu": false,
+          "refresh": false
+        },
+        {
+          "name": "Show cached feed",
+          "priority": 2,
+          "action": "./bin/scrollzero.sh",
+          "params": "show",
+          "exitmenu": false,
+          "refresh": false
+        },
+        {
+          "name": "API diagnostics",
+          "priority": 3,
+          "action": "./bin/scrollzero.sh",
+          "params": "health",
+          "exitmenu": false,
+          "refresh": false
+        }
+      ]
+    }
+  ]
+}

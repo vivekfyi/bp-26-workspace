@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension>
+    <information>
+        <name>Scroll Zero</name>
+        <version>0.1.0</version>
+        <author>Scroll Zero</author>
+        <id>scrollzero.sample</id>
+    </information>
+    <menus>
+        <menu type="json" dynamic="true">menu.json</menu>
+    </menus>
+</extension>

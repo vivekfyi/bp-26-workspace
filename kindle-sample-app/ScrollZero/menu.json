@@ -1,0 +1,42 @@
+{
+  "items": [
+    {
+      "name": "Scroll Zero",
+      "priority": 1,
+      "items": [
+        {
+          "name": "Open interactive UI in KOReader",
+          "priority": 0,
+          "action": "sh ./bin/launch-koreader.sh",
+          "params": "",
+          "exitmenu": true,
+          "refresh": false
+        },
+        {
+          "name": "Refresh feed",
+          "priority": 1,
+          "action": "sh ./bin/scrollzero.sh",
+          "params": "refresh",
+          "exitmenu": true,
+          "refresh": false
+        },
+        {
+          "name": "Show cached feed",
+          "priority": 2,
+          "action": "sh ./bin/scrollzero.sh",
+          "params": "show",
+          "exitmenu": true,
+          "refresh": false
+        },
+        {
+          "name": "API diagnostics",
+          "priority": 3,
+          "action": "sh ./bin/scrollzero.sh",
+          "params": "health",
+          "exitmenu": true,
+          "refresh": false
+        }
+      ]
+    }
+  ]
+}
