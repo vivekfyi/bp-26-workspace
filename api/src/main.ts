@@ -40,6 +40,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   const isDevelopment = process.env.NODE_ENV !== 'production';
+  const clerkOrigins = ['https://*.clerk.accounts.dev', 'https://clerk.scroll0.com'];
 
   app.use(
     helmet({
@@ -47,15 +48,15 @@ async function bootstrap() {
         directives: {
           defaultSrc: ["'self'"],
           baseUri: ["'self'"],
-          connectSrc: ["'self'", 'https://*.clerk.accounts.dev', ...(isDevelopment ? ['ws:', 'http:'] : [])],
+          connectSrc: ["'self'", ...clerkOrigins, ...(isDevelopment ? ['ws:', 'http:'] : [])],
           fontSrc: ["'self'", 'https://fonts.gstatic.com'],
           formAction: ["'self'"],
           frameAncestors: ["'self'"],
           imgSrc: ["'self'", 'data:', 'https:'],
           objectSrc: ["'none'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", 'https://*.clerk.accounts.dev', ...(isDevelopment ? ["'unsafe-eval'"] : [])],
+          scriptSrc: ["'self'", "'unsafe-inline'", ...clerkOrigins, ...(isDevelopment ? ["'unsafe-eval'"] : [])],
           styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-          frameSrc: ["'self'", 'https://*.clerk.accounts.dev'],
+          frameSrc: ["'self'", ...clerkOrigins],
           upgradeInsecureRequests: null,
         },
       },
