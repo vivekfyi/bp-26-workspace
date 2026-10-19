@@ -9,7 +9,7 @@ type ClerkWindow = Window & {
 function snapshot(label: string) {
   const script = document.querySelector<HTMLScriptElement>('script[data-clerk-js-script]');
   const performanceEntry = performance.getEntriesByName(script?.src ?? '').at(-1);
-  console.info('[Scroll Zero Clerk debug]', JSON.stringify({
+  console.info('[scroll0 Clerk debug]', JSON.stringify({
     label,
     readyState: document.readyState,
     clerkStatus: (window as ClerkWindow).Clerk?.status ?? null,
@@ -23,7 +23,7 @@ function snapshot(label: string) {
 export default function ClerkDiagnostics() {
   useEffect(() => {
     const onWindowError = (event: ErrorEvent) => {
-      console.error('[Scroll Zero Clerk debug] window error', JSON.stringify({
+      console.error('[scroll0 Clerk debug] window error', JSON.stringify({
         message: event.message,
         source: event.filename,
         line: event.lineno,
@@ -31,10 +31,10 @@ export default function ClerkDiagnostics() {
       }), event.error);
     };
     const onUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error('[Scroll Zero Clerk debug] unhandled rejection', event.reason);
+      console.error('[scroll0 Clerk debug] unhandled rejection', event.reason);
     };
     const onCspViolation = (event: SecurityPolicyViolationEvent) => {
-      console.error('[Scroll Zero Clerk debug] CSP violation', JSON.stringify({
+      console.error('[scroll0 Clerk debug] CSP violation', JSON.stringify({
         blockedURI: event.blockedURI,
         violatedDirective: event.violatedDirective,
         effectiveDirective: event.effectiveDirective,
@@ -42,7 +42,7 @@ export default function ClerkDiagnostics() {
       }));
     };
     const script = document.querySelector<HTMLScriptElement>('script[data-clerk-js-script]');
-    const onScriptError = () => console.error('[Scroll Zero Clerk debug] Clerk script error', script?.src ?? 'script not found');
+    const onScriptError = () => console.error('[scroll0 Clerk debug] Clerk script error', script?.src ?? 'script not found');
 
     snapshot('diagnostics mounted');
     window.addEventListener('error', onWindowError);

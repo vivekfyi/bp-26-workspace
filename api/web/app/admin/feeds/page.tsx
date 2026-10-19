@@ -37,7 +37,7 @@ export default function AdminFeedsPage() {
   useEffect(() => {
     const logAuthState = (label: string) => {
       const clerk = (window as Window & { Clerk?: { status?: string } }).Clerk;
-      console.info('[Scroll Zero Clerk debug]', label, {
+      console.info('[scroll0 Clerk debug]', label, {
         isLoaded,
         isSignedIn,
         userId: user?.id ?? null,
@@ -73,24 +73,24 @@ export default function AdminFeedsPage() {
   useEffect(() => { void load(); }, [load]);
 
   async function authenticatedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
-    console.info('[Scroll Zero Clerk debug] authenticated request started', { input: String(input), method: init.method ?? 'GET', isLoaded, isSignedIn });
+    console.info('[scroll0 Clerk debug] authenticated request started', { input: String(input), method: init.method ?? 'GET', isLoaded, isSignedIn });
     if (!isLoaded) {
-      console.warn('[Scroll Zero Clerk debug] request blocked because Clerk is not loaded');
+      console.warn('[scroll0 Clerk debug] request blocked because Clerk is not loaded');
       throw new Error('Clerk is still loading. Please try again.');
     }
     if (!isSignedIn) {
-      console.warn('[Scroll Zero Clerk debug] request blocked because there is no signed-in session');
+      console.warn('[scroll0 Clerk debug] request blocked because there is no signed-in session');
       throw new Error('You are signed out. Please sign in again.');
     }
     let token: string | null;
     try {
       token = await getToken();
     } catch (tokenError) {
-      console.error('[Scroll Zero Clerk debug] getToken failed', tokenError);
+      console.error('[scroll0 Clerk debug] getToken failed', tokenError);
       throw tokenError;
     }
     if (!token) {
-      console.warn('[Scroll Zero Clerk debug] getToken returned no token');
+      console.warn('[scroll0 Clerk debug] getToken returned no token');
       throw new Error('Your Clerk session is not ready. Please try again.');
     }
     const headers = new Headers(init.headers);
@@ -148,7 +148,7 @@ export default function AdminFeedsPage() {
   }
 
   return <main className="admin-shell">
-    <header className="admin-header"><a className="brand" href="/"><span className="brand-mark">SZ</span><span>Scroll Zero</span></a><div className="admin-header-actions"><span className="admin-user">{user?.primaryEmailAddress?.emailAddress}</span><UserButton /><a className="quiet-link" href="/">Back to reading room ↗</a></div></header>
+    <header className="admin-header"><a className="brand" href="/"><span className="brand-mark">S0</span><span>scroll0</span></a><div className="admin-header-actions"><span className="admin-user">{user?.primaryEmailAddress?.emailAddress}</span><UserButton /><a className="quiet-link" href="/">Back to reading room ↗</a></div></header>
     <section className="admin-hero"><div><p className="eyebrow">Admin · Sources</p><h1>Manage your<br /><em>signal.</em></h1><p>Keep the reading room focused by choosing exactly which feeds are active.</p></div><button className="button button-dark" onClick={syncFeeds} disabled={syncing}>{syncing ? 'Syncing…' : 'Sync all feeds'}</button></section>
     {message ? <div className="admin-success">{message}</div> : null}{error ? <div className="notice">{error}</div> : null}
     <section className="admin-grid">

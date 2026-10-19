@@ -4,7 +4,7 @@ import ClerkDiagnostics from '../components/clerk-diagnostics';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Scroll Zero',
+  title: 'scroll0',
   description: 'A calmer reading queue for the internet.',
 };
 

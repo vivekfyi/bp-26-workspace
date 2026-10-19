@@ -146,7 +146,7 @@ export default function HomePage() {
   return (
     <main className="shell">
       <header className="topbar">
-        <a className="brand" href="/"><span className="brand-mark">SZ</span><span>Scroll Zero</span></a>
+        <a className="brand" href="/"><span className="brand-mark">S0</span><span>scroll0</span></a>
         <div className="topbar-actions">
           <span className={`status ${health?.status === 'ok' ? 'online' : ''}`}><span className="status-dot" /> {health?.status === 'ok' ? 'Systems clear' : 'Checking systems'}</span>
           <button className="button button-dark" onClick={triggerSync} disabled={syncing}>{syncing ? 'Syncing…' : 'Sync sources'}</button>
@@ -189,7 +189,7 @@ export default function HomePage() {
         </article>
       </section> : null}
 
-      <footer><span>Scroll Zero</span><span>Less feed. More signal.</span></footer>
+      <footer><span>scroll0</span><span>Less feed. More signal.</span></footer>
     </main>
   );
 }
