@@ -138,6 +138,7 @@ export const ArticleScalarFieldEnum = {
   summaryBullets: 'summaryBullets',
   tags: 'tags',
   readingTimeMinutes: 'readingTimeMinutes',
+  viewCount: 'viewCount',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

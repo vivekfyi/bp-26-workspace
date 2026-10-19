@@ -28,10 +28,12 @@ export type AggregateArticle = {
 
 export type ArticleAvgAggregateOutputType = {
   readingTimeMinutes: number | null
+  viewCount: number | null
 }
 
 export type ArticleSumAggregateOutputType = {
   readingTimeMinutes: number | null
+  viewCount: number | null
 }
 
 export type ArticleMinAggregateOutputType = {
@@ -45,6 +47,7 @@ export type ArticleMinAggregateOutputType = {
   fullText: string | null
   summaryShort: string | null
   readingTimeMinutes: number | null
+  viewCount: number | null
   status: $Enums.ArticleStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -61,6 +64,7 @@ export type ArticleMaxAggregateOutputType = {
   fullText: string | null
   summaryShort: string | null
   readingTimeMinutes: number | null
+  viewCount: number | null
   status: $Enums.ArticleStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -79,6 +83,7 @@ export type ArticleCountAggregateOutputType = {
   summaryBullets: number
   tags: number
   readingTimeMinutes: number
+  viewCount: number
   status: number
   createdAt: number
   updatedAt: number
@@ -88,10 +93,12 @@ export type ArticleCountAggregateOutputType = {
 
 export type ArticleAvgAggregateInputType = {
   readingTimeMinutes?: true
+  viewCount?: true
 }
 
 export type ArticleSumAggregateInputType = {
   readingTimeMinutes?: true
+  viewCount?: true
 }
 
 export type ArticleMinAggregateInputType = {
@@ -105,6 +112,7 @@ export type ArticleMinAggregateInputType = {
   fullText?: true
   summaryShort?: true
   readingTimeMinutes?: true
+  viewCount?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -121,6 +129,7 @@ export type ArticleMaxAggregateInputType = {
   fullText?: true
   summaryShort?: true
   readingTimeMinutes?: true
+  viewCount?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -139,6 +148,7 @@ export type ArticleCountAggregateInputType = {
   summaryBullets?: true
   tags?: true
   readingTimeMinutes?: true
+  viewCount?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -244,6 +254,7 @@ export type ArticleGroupByOutputType = {
   summaryBullets: runtime.JsonValue | null
   tags: runtime.JsonValue | null
   readingTimeMinutes: number | null
+  viewCount: number
   status: $Enums.ArticleStatus
   createdAt: Date
   updatedAt: Date
@@ -285,6 +296,7 @@ export type ArticleWhereInput = {
   summaryBullets?: Prisma.JsonNullableFilter<"Article">
   tags?: Prisma.JsonNullableFilter<"Article">
   readingTimeMinutes?: Prisma.IntNullableFilter<"Article"> | number | null
+  viewCount?: Prisma.IntFilter<"Article"> | number
   status?: Prisma.EnumArticleStatusFilter<"Article"> | $Enums.ArticleStatus
   createdAt?: Prisma.DateTimeFilter<"Article"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Article"> | Date | string
@@ -304,6 +316,7 @@ export type ArticleOrderByWithRelationInput = {
   summaryBullets?: Prisma.SortOrderInput | Prisma.SortOrder
   tags?: Prisma.SortOrderInput | Prisma.SortOrder
   readingTimeMinutes?: Prisma.SortOrderInput | Prisma.SortOrder
+  viewCount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -326,6 +339,7 @@ export type ArticleWhereUniqueInput = Prisma.AtLeast<{
   summaryBullets?: Prisma.JsonNullableFilter<"Article">
   tags?: Prisma.JsonNullableFilter<"Article">
   readingTimeMinutes?: Prisma.IntNullableFilter<"Article"> | number | null
+  viewCount?: Prisma.IntFilter<"Article"> | number
   status?: Prisma.EnumArticleStatusFilter<"Article"> | $Enums.ArticleStatus
   createdAt?: Prisma.DateTimeFilter<"Article"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Article"> | Date | string
@@ -345,6 +359,7 @@ export type ArticleOrderByWithAggregationInput = {
   summaryBullets?: Prisma.SortOrderInput | Prisma.SortOrder
   tags?: Prisma.SortOrderInput | Prisma.SortOrder
   readingTimeMinutes?: Prisma.SortOrderInput | Prisma.SortOrder
+  viewCount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -371,6 +386,7 @@ export type ArticleScalarWhereWithAggregatesInput = {
   summaryBullets?: Prisma.JsonNullableWithAggregatesFilter<"Article">
   tags?: Prisma.JsonNullableWithAggregatesFilter<"Article">
   readingTimeMinutes?: Prisma.IntNullableWithAggregatesFilter<"Article"> | number | null
+  viewCount?: Prisma.IntWithAggregatesFilter<"Article"> | number
   status?: Prisma.EnumArticleStatusWithAggregatesFilter<"Article"> | $Enums.ArticleStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Article"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Article"> | Date | string
@@ -388,6 +404,7 @@ export type ArticleCreateInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: number | null
+  viewCount?: number
   status?: $Enums.ArticleStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -407,6 +424,7 @@ export type ArticleUncheckedCreateInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: number | null
+  viewCount?: number
   status?: $Enums.ArticleStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -424,6 +442,7 @@ export type ArticleUpdateInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -443,6 +462,7 @@ export type ArticleUncheckedUpdateInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -461,6 +481,7 @@ export type ArticleCreateManyInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: number | null
+  viewCount?: number
   status?: $Enums.ArticleStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -478,6 +499,7 @@ export type ArticleUpdateManyMutationInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -496,6 +518,7 @@ export type ArticleUncheckedUpdateManyInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -524,6 +547,7 @@ export type ArticleCountOrderByAggregateInput = {
   summaryBullets?: Prisma.SortOrder
   tags?: Prisma.SortOrder
   readingTimeMinutes?: Prisma.SortOrder
+  viewCount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -531,6 +555,7 @@ export type ArticleCountOrderByAggregateInput = {
 
 export type ArticleAvgOrderByAggregateInput = {
   readingTimeMinutes?: Prisma.SortOrder
+  viewCount?: Prisma.SortOrder
 }
 
 export type ArticleMaxOrderByAggregateInput = {
@@ -544,6 +569,7 @@ export type ArticleMaxOrderByAggregateInput = {
   fullText?: Prisma.SortOrder
   summaryShort?: Prisma.SortOrder
   readingTimeMinutes?: Prisma.SortOrder
+  viewCount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -560,6 +586,7 @@ export type ArticleMinOrderByAggregateInput = {
   fullText?: Prisma.SortOrder
   summaryShort?: Prisma.SortOrder
   readingTimeMinutes?: Prisma.SortOrder
+  viewCount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -567,6 +594,7 @@ export type ArticleMinOrderByAggregateInput = {
 
 export type ArticleSumOrderByAggregateInput = {
   readingTimeMinutes?: Prisma.SortOrder
+  viewCount?: Prisma.SortOrder
 }
 
 export type ArticleCreateNestedManyWithoutSourceInput = {
@@ -635,6 +663,7 @@ export type ArticleCreateWithoutSourceInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: number | null
+  viewCount?: number
   status?: $Enums.ArticleStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -652,6 +681,7 @@ export type ArticleUncheckedCreateWithoutSourceInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: number | null
+  viewCount?: number
   status?: $Enums.ArticleStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -699,6 +729,7 @@ export type ArticleScalarWhereInput = {
   summaryBullets?: Prisma.JsonNullableFilter<"Article">
   tags?: Prisma.JsonNullableFilter<"Article">
   readingTimeMinutes?: Prisma.IntNullableFilter<"Article"> | number | null
+  viewCount?: Prisma.IntFilter<"Article"> | number
   status?: Prisma.EnumArticleStatusFilter<"Article"> | $Enums.ArticleStatus
   createdAt?: Prisma.DateTimeFilter<"Article"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Article"> | Date | string
@@ -716,6 +747,7 @@ export type ArticleCreateManySourceInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: number | null
+  viewCount?: number
   status?: $Enums.ArticleStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -733,6 +765,7 @@ export type ArticleUpdateWithoutSourceInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -750,6 +783,7 @@ export type ArticleUncheckedUpdateWithoutSourceInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -767,6 +801,7 @@ export type ArticleUncheckedUpdateManyWithoutSourceInput = {
   summaryBullets?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   readingTimeMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -787,6 +822,7 @@ export type ArticleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   summaryBullets?: boolean
   tags?: boolean
   readingTimeMinutes?: boolean
+  viewCount?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -806,6 +842,7 @@ export type ArticleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   summaryBullets?: boolean
   tags?: boolean
   readingTimeMinutes?: boolean
+  viewCount?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -825,6 +862,7 @@ export type ArticleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   summaryBullets?: boolean
   tags?: boolean
   readingTimeMinutes?: boolean
+  viewCount?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -844,12 +882,13 @@ export type ArticleSelectScalar = {
   summaryBullets?: boolean
   tags?: boolean
   readingTimeMinutes?: boolean
+  viewCount?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ArticleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sourceId" | "originalUrl" | "title" | "author" | "publishedAt" | "leadImageUrl" | "fullText" | "summaryShort" | "summaryBullets" | "tags" | "readingTimeMinutes" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["article"]>
+export type ArticleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sourceId" | "originalUrl" | "title" | "author" | "publishedAt" | "leadImageUrl" | "fullText" | "summaryShort" | "summaryBullets" | "tags" | "readingTimeMinutes" | "viewCount" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["article"]>
 export type ArticleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   source?: boolean | Prisma.SourceDefaultArgs<ExtArgs>
 }
@@ -878,6 +917,7 @@ export type $ArticlePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     summaryBullets: runtime.JsonValue | null
     tags: runtime.JsonValue | null
     readingTimeMinutes: number | null
+    viewCount: number
     status: $Enums.ArticleStatus
     createdAt: Date
     updatedAt: Date
@@ -1317,6 +1357,7 @@ export interface ArticleFieldRefs {
   readonly summaryBullets: Prisma.FieldRef<"Article", 'Json'>
   readonly tags: Prisma.FieldRef<"Article", 'Json'>
   readonly readingTimeMinutes: Prisma.FieldRef<"Article", 'Int'>
+  readonly viewCount: Prisma.FieldRef<"Article", 'Int'>
   readonly status: Prisma.FieldRef<"Article", 'ArticleStatus'>
   readonly createdAt: Prisma.FieldRef<"Article", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Article", 'DateTime'>

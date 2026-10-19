@@ -53,6 +53,7 @@ export class ArticlesService {
           summaryBullets: true,
           tags: true,
           readingTimeMinutes: true,
+          viewCount: true,
           status: true,
           source: {
             select: {
@@ -104,11 +105,21 @@ export class ArticlesService {
   }
 
   async getProcessedArticle(id: string) {
-    const article = await this.prismaService.article.findFirst({
+    const existingArticle = await this.prismaService.article.findFirst({
       where: {
         id,
         status: ArticleStatus.PROCESSED,
       },
+      select: { id: true },
+    });
+
+    if (!existingArticle) {
+      throw new NotFoundException('Processed article not found');
+    }
+
+    const article = await this.prismaService.article.update({
+      where: { id: existingArticle.id },
+      data: { viewCount: { increment: 1 } },
       include: {
         source: {
           select: {

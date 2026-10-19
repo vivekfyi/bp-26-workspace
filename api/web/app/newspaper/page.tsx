@@ -13,6 +13,7 @@ type Article = {
   summaryBullets?: unknown;
   publishedAt?: string | null;
   readingTimeMinutes?: number | null;
+  viewCount?: number;
   source: Source;
 };
 type ArticleResponse = { items: Article[]; pagination: { total: number } };
@@ -104,6 +105,7 @@ export default function NewspaperPage() {
     for (let index = 0; index < articles.length; index += SECTION_SIZE) chunks.push(articles.slice(index, index + SECTION_SIZE));
     return chunks;
   }, [articles]);
+  const maxViewCount = useMemo(() => Math.max(0, ...articles.map((article) => article.viewCount ?? 0)), [articles]);
 
   function markRead(articleId: string) {
     setReadIds((current) => {
@@ -125,7 +127,9 @@ export default function NewspaperPage() {
 
   function story(article: Article, className = '') {
     const isRead = readIds.includes(article.id);
-    return <article className={`newspaper-story ${isRead ? 'is-read' : ''} ${className}`} key={article.id}>
+    const views = article.viewCount ?? 0;
+    const size = maxViewCount > 0 && views / maxViewCount >= .65 ? 'size-large' : maxViewCount > 0 && views / maxViewCount >= .25 ? 'size-medium' : 'size-small';
+    return <article className={`newspaper-story ${size} ${isRead ? 'is-read' : ''} ${className}`} key={article.id}>
       <div className="newspaper-story-kicker">{article.source.category ?? 'Dispatch'} · {article.source.name}</div>
       <h2><a href={`/?article=${encodeURIComponent(article.id)}`} onClick={() => markRead(article.id)}>{article.title}</a></h2>
       {article.leadImageUrl ? <img src={article.leadImageUrl} alt="" loading="lazy" /> : null}
@@ -146,16 +150,11 @@ export default function NewspaperPage() {
 
     {!loading && !error && sections.length > 0 ? <div className="newspaper-stage"><section className="newspaper-sheet" style={{ transform: `scale(${zoom})`, width: `${100 / zoom}%` }}>
       {sections.map((section, sectionIndex) => {
-        const lead = section[0];
-        const sideStories = section.slice(1, 3);
-        const lowerStories = section.slice(3);
-        return <div className="newspaper-section" key={lead.id}>
+        const firstArticle = section[0];
+        return <div className="newspaper-section" key={firstArticle.id}>
           {sectionIndex === 0 ? <div className="newspaper-masthead"><span>Daily edition</span><strong>SCROLL ZERO</strong><span>Less feed. More signal.</span></div> : <div className="newspaper-continuation">Continued from the reading desk · Edition {sectionIndex + 1}</div>}
           <div className="newspaper-rule" />
-          <div className="newspaper-grid">
-            {story(lead, 'lead-story')}
-            <div className="newspaper-flow">{[...sideStories, ...lowerStories].map((article) => story(article))}</div>
-          </div>
+          <div className="newspaper-flow">{section.map((article) => story(article))}</div>
         </div>;
       })}
       <footer className="newspaper-footer"><span>scroll0.com/newspaper</span><span>{readIds.length} stories read · Keep going</span></footer>
