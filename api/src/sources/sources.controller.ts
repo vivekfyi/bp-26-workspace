@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { ClerkAdminGuard } from '../auth/clerk-auth.guard.js';
+import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { ClerkAdminGuard, ClerkAuthGuard, isClerkAdminUserId, type ClerkRequest } from '../auth/clerk-auth.guard.js';
 import { CreateSourceDto } from './dto/create-source.dto.js';
 import { SourcesService } from './sources.service.js';
 import { ListSourcesDto } from './dto/list-sources.dto.js';
@@ -17,6 +17,12 @@ export class SourcesController {
   @Get('topics')
   listTopics() {
     return this.sourcesService.listTopics();
+  }
+
+  @Get('admin-access')
+  @UseGuards(ClerkAuthGuard)
+  adminAccess(@Req() request: ClerkRequest) {
+    return { isAdmin: Boolean(request.clerkUserId && isClerkAdminUserId(request.clerkUserId)) };
   }
 
   @Post()

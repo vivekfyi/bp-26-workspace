@@ -12,6 +12,14 @@ export type ClerkRequest = Request & {
   clerkUserId?: string;
 };
 
+export function isClerkAdminUserId(userId: string) {
+  return (process.env.CLERK_ADMIN_USER_IDS ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .includes(userId);
+}
+
 @Injectable()
 export class ClerkAuthGuard implements CanActivate {
   constructor(private readonly adminOnly = false) {}
@@ -32,7 +40,7 @@ export class ClerkAuthGuard implements CanActivate {
       if (!userId) throw new UnauthorizedException('The Clerk token has no user id.');
       request.clerkUserId = userId;
 
-      if (this.adminOnly && !this.adminUserIds().includes(userId)) {
+      if (this.adminOnly && !isClerkAdminUserId(userId)) {
         throw new ForbiddenException('Admin access is required.');
       }
 
@@ -43,12 +51,6 @@ export class ClerkAuthGuard implements CanActivate {
     }
   }
 
-  private adminUserIds() {
-    return (process.env.CLERK_ADMIN_USER_IDS ?? '')
-      .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean);
-  }
 }
 
 @Injectable()

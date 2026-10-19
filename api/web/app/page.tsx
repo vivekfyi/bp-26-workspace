@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { SignInButton, SignUpButton, UserButton, useAuth } from '@clerk/nextjs';
 
 type Topic = { slug: string; name: string };
 type Source = { name: string; category?: string | null; licenseType?: string | null; siteUrl?: string | null; topics: Topic[] };
@@ -54,6 +55,8 @@ export default function HomePage() {
   const [highContrast, setHighContrast] = useState(false);
   const [showImages, setShowImages] = useState(true);
   const [readingProgress, setReadingProgress] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { getToken, isLoaded: clerkLoaded, isSignedIn } = useAuth();
 
   const loadArticles = useCallback(async () => {
     setLoading(true);
@@ -84,6 +87,21 @@ export default function HomePage() {
       .then((data: Health | null) => setHealth(data))
       .catch(() => setHealth(null));
   }, [loadArticles]);
+
+  useEffect(() => {
+    let active = true;
+    if (!clerkLoaded || !isSignedIn) {
+      setIsAdmin(false);
+      return () => { active = false; };
+    }
+
+    void getToken().then((token) => token ? fetch('/api/sources/admin-access', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }) : null)
+      .then(async (response) => response?.ok ? response.json() as Promise<{ isAdmin: boolean }> : null)
+      .then((data) => { if (active) setIsAdmin(data?.isAdmin === true); })
+      .catch(() => { if (active) setIsAdmin(false); });
+
+    return () => { active = false; };
+  }, [clerkLoaded, getToken, isSignedIn]);
 
   async function triggerSync() {
     setSyncing(true);
@@ -177,7 +195,8 @@ export default function HomePage() {
         <a className="brand" href="/"><span className="brand-mark">S0</span><span>scroll0</span></a>
         <div className="topbar-actions">
           <span className={`status ${health?.status === 'ok' ? 'online' : ''}`}><span className="status-dot" /> {health?.status === 'ok' ? 'Systems clear' : 'Checking systems'}</span>
-          <button className="button button-dark" onClick={triggerSync} disabled={syncing}>{syncing ? 'Syncing…' : 'Sync sources'}</button>
+          {isAdmin ? <button className="button button-dark" onClick={triggerSync} disabled={syncing}>{syncing ? 'Syncing…' : 'Sync sources'}</button> : null}
+          {!clerkLoaded ? null : isSignedIn ? <UserButton /> : <span className="auth-actions"><SignInButton mode="modal"><button className="button button-light">Log in</button></SignInButton><SignUpButton mode="modal"><button className="button button-dark">Register</button></SignUpButton></span>}
         </div>
       </header>
 
