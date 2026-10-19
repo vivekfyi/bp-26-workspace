@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import Parser from 'rss-parser';
 import { Prisma, ArticleStatus } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -106,6 +106,37 @@ export class RssIngestionService {
     }
 
     return summary;
+  }
+
+  async reprocessSourceArticles(sourceId: string) {
+    const source = await this.prismaService.source.findUnique({
+      where: { id: sourceId },
+      include: {
+        topics: { include: { topic: { select: { slug: true } } } },
+        articles: { select: { id: true }, orderBy: { publishedAt: 'desc' } },
+      },
+    });
+
+    if (!source) throw new NotFoundException('Source not found');
+
+    let processed = 0;
+    let failed = 0;
+    for (const article of source.articles) {
+      await this.prismaService.article.update({ where: { id: article.id }, data: { status: ArticleStatus.PENDING } });
+      await this.processArticle({
+        articleId: article.id,
+        sourceCategory: source.category,
+        sourceTopics: source.topics.map((sourceTopic) => sourceTopic.topic.slug),
+        sourceLicenseType: source.licenseType,
+        sourceLanguage: source.language,
+        rssContent: null,
+      });
+      const result = await this.prismaService.article.findUnique({ where: { id: article.id }, select: { status: true } });
+      if (result?.status === ArticleStatus.PROCESSED) processed += 1;
+      else failed += 1;
+    }
+
+    return { sourceId, total: source.articles.length, processed, failed };
   }
 
   private async processArticle(payload: {

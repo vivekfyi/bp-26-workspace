@@ -156,4 +156,8 @@ export class SourcesService {
       timestamp: new Date().toISOString(),
     };
   }
+
+  async reprocessSource(id: string) {
+    return this.rssIngestionService.reprocessSourceArticles(id);
+  }
 }

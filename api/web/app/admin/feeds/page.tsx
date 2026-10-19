@@ -31,6 +31,7 @@ export default function AdminFeedsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [reprocessingId, setReprocessingId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -147,6 +148,20 @@ export default function AdminFeedsPage() {
     finally { setSyncing(false); }
   }
 
+  async function reprocessFeed(feed: Feed) {
+    if (!window.confirm(`Reprocess all ${feed._count?.articles ?? 0} articles from ${feed.name}? This may take a while and use AI credits.`)) return;
+    setReprocessingId(feed.id); setError(''); setMessage('');
+    try {
+      const response = await authenticatedFetch(`/api/sources/${feed.id}/reprocess`, { method: 'POST' });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(data?.message ?? `Reprocessing failed (${response.status}).`);
+      setMessage(`Reprocessed ${data?.processed ?? 0} of ${data?.total ?? 0} articles from ${feed.name}.`);
+      await load();
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Could not reprocess feed articles.');
+    } finally { setReprocessingId(null); }
+  }
+
   return <main className="admin-shell">
     <header className="admin-header"><a className="brand" href="/"><span className="brand-mark">S0</span><span>scroll0</span></a><div className="admin-header-actions"><span className="admin-user">{user?.primaryEmailAddress?.emailAddress}</span><UserButton /><a className="quiet-link" href="/">Back to reading room ↗</a></div></header>
     <section className="admin-hero"><div><p className="eyebrow">Admin · Sources</p><h1>Manage your<br /><em>signal.</em></h1><p>Keep the reading room focused by choosing exactly which feeds are active.</p></div><button className="button button-dark" onClick={syncFeeds} disabled={syncing}>{syncing ? 'Syncing…' : 'Sync all feeds'}</button></section>
@@ -161,7 +176,7 @@ export default function AdminFeedsPage() {
         <fieldset><legend>Topics</legend><div className="topic-picker">{topics.map((topic) => <button type="button" key={topic.slug} className={`topic-chip ${form.topicSlugs.includes(topic.slug) ? 'selected' : ''}`} onClick={() => toggleTopic(topic.slug)}>{topic.name}</button>)}</div></fieldset>
         <button className="button button-dark form-submit" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Save changes' : 'Add feed'}</button>
       </form>
-      <section className="feed-list"><div className="section-heading"><div><p className="eyebrow">Source library</p><h2>{feeds.length} feeds</h2></div><span className="muted-mono">{feeds.filter((feed) => feed.isActive).length} active</span></div>{loading ? <div className="empty-state">Loading sources…</div> : feeds.length === 0 ? <div className="empty-state">No feeds yet. Add your first source.</div> : <div className="feed-table">{feeds.map((feed) => <article className={`feed-card ${feed.isActive ? '' : 'inactive'}`} key={feed.id}><div className="feed-card-main"><div className="feed-status"><span className="status-dot" />{feed.isActive ? 'Active' : 'Paused'}</div><h3>{feed.name}</h3><a href={feed.feedUrl} target="_blank" rel="noreferrer">{feed.feedUrl}</a><div className="feed-meta"><span>{feed.category}</span><span>{feed._count?.articles ?? 0} articles</span><span>{feed.topics.map((topic) => topic.name).join(' · ') || 'No topics'}</span></div></div><div className="feed-actions"><button className="text-button" onClick={() => editFeed(feed)}>Edit</button><button className="text-button" onClick={() => void toggleActive(feed)}>{feed.isActive ? 'Pause' : 'Activate'}</button><button className="text-button danger" onClick={() => void removeFeed(feed)}>Delete</button></div></article>)}</div>}</section>
+      <section className="feed-list"><div className="section-heading"><div><p className="eyebrow">Source library</p><h2>{feeds.length} feeds</h2></div><span className="muted-mono">{feeds.filter((feed) => feed.isActive).length} active</span></div>{loading ? <div className="empty-state">Loading sources…</div> : feeds.length === 0 ? <div className="empty-state">No feeds yet. Add your first source.</div> : <div className="feed-table">{feeds.map((feed) => <article className={`feed-card ${feed.isActive ? '' : 'inactive'}`} key={feed.id}><div className="feed-card-main"><div className="feed-status"><span className="status-dot" />{feed.isActive ? 'Active' : 'Paused'}</div><h3>{feed.name}</h3><a href={feed.feedUrl} target="_blank" rel="noreferrer">{feed.feedUrl}</a><div className="feed-meta"><span>{feed.category}</span><span>{feed._count?.articles ?? 0} articles</span><span>{feed.topics.map((topic) => topic.name).join(' · ') || 'No topics'}</span></div></div><div className="feed-actions"><button className="text-button" onClick={() => editFeed(feed)}>Edit</button><button className="text-button" onClick={() => void toggleActive(feed)}>{feed.isActive ? 'Pause' : 'Activate'}</button><button className="text-button" onClick={() => void reprocessFeed(feed)} disabled={reprocessingId !== null}>{reprocessingId === feed.id ? 'Reprocessing…' : 'Reprocess'}</button><button className="text-button danger" onClick={() => void removeFeed(feed)}>Delete</button></div></article>)}</div>}</section>
     </section>
   </main>;
 }

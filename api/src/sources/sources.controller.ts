@@ -42,4 +42,10 @@ export class SourcesController {
   triggerSync() {
     return this.sourcesService.triggerSync();
   }
+
+  @Post(':id/reprocess')
+  @UseGuards(ClerkAdminGuard)
+  reprocessSource(@Param('id') id: string) {
+    return this.sourcesService.reprocessSource(id);
+  }
 }
