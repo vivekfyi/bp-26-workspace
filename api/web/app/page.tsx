@@ -56,6 +56,7 @@ export default function HomePage() {
   const [showImages, setShowImages] = useState(true);
   const [readingProgress, setReadingProgress] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [queueOpen, setQueueOpen] = useState(false);
   const { getToken, isLoaded: clerkLoaded, isSignedIn } = useAuth();
 
   const loadArticles = useCallback(async () => {
@@ -71,7 +72,10 @@ export default function HomePage() {
       const data = (await response.json()) as ArticleResponse;
       setArticles(data.items ?? []);
       setTotal(data.pagination?.total ?? 0);
-      setSelectedId((current) => current && data.items.some((article) => article.id === current) ? current : data.items[0]?.id ?? null);
+      const requestedId = new URLSearchParams(window.location.search).get('article');
+      setSelectedId((current) => requestedId && data.items.some((article) => article.id === requestedId)
+        ? requestedId
+        : current && data.items.some((article) => article.id === current) ? current : data.items[0]?.id ?? null);
     } catch (requestError) {
       setError(requestError instanceof DOMException && requestError.name === 'AbortError' ? 'The article service did not respond. Check that the API is running, then try again.' : requestError instanceof Error ? requestError.message : 'Unable to load articles.');
     } finally {
@@ -79,6 +83,23 @@ export default function HomePage() {
       setLoading(false);
     }
   }, [category]);
+
+  useEffect(() => {
+    const syncArticleFromUrl = () => {
+      const articleId = new URLSearchParams(window.location.search).get('article');
+      if (articleId) setSelectedId(articleId);
+    };
+    window.addEventListener('popstate', syncArticleFromUrl);
+    return () => window.removeEventListener('popstate', syncArticleFromUrl);
+  }, []);
+
+  function selectArticle(articleId: string) {
+    setSelectedId(articleId);
+    setQueueOpen(false);
+    const url = new URL(window.location.href);
+    url.searchParams.set('article', articleId);
+    window.history.pushState({}, '', url);
+  }
 
   useEffect(() => {
     void loadArticles();
@@ -212,9 +233,9 @@ export default function HomePage() {
       {!loading && !error && visibleArticles.length === 0 ? <div className="empty-state"><div className="empty-icon">✦</div><h3>Your queue is quiet.</h3><p>Sync your sources to bring in the next good read.</p></div> : null}
 
       {!loading && visibleArticles.length > 0 ? <section className="browser-layout">
-        <aside className="article-list" aria-label="Article list">
-          <div className="list-heading"><div><p className="eyebrow">Your queue</p><h2>{visibleArticles.length} articles</h2></div><span>Newest first</span></div>
-          <div className="list-scroll">{visibleArticles.map((article) => <button className={`article-row ${selectedArticle?.id === article.id ? 'selected' : ''}`} key={article.id} onClick={() => setSelectedId(article.id)}><span className="row-category">{article.source.category ?? 'article'}</span><strong>{article.title}</strong><span className="row-meta">{article.source.name} · {formatDate(article.publishedAt)}</span></button>)}</div>
+        <aside className={`article-list ${queueOpen ? 'queue-open' : ''}`} aria-label="Article list">
+          <div className="list-heading"><div><p className="eyebrow">Your queue</p><h2>{visibleArticles.length} articles</h2></div><button className="queue-toggle" onClick={() => setQueueOpen((current) => !current)} aria-expanded={queueOpen}>{queueOpen ? 'Close' : 'Browse queue'}</button></div>
+          <div className="list-scroll">{visibleArticles.map((article) => <a className={`article-row ${selectedArticle?.id === article.id ? 'selected' : ''}`} key={article.id} href={`/?article=${encodeURIComponent(article.id)}`} onClick={(event) => { event.preventDefault(); selectArticle(article.id); }}><span className="row-category">{article.source.category ?? 'article'}</span><strong>{article.title}</strong><span className="row-meta">{article.source.name} · {formatDate(article.publishedAt)}</span></a>)}</div>
         </aside>
 
         <article className="reader-panel">
