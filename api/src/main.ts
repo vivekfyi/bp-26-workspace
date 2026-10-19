@@ -40,7 +40,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  const clerkOrigins = ['https://*.clerk.accounts.dev', 'https://clerk.scroll0.com'];
+  const clerkOrigins = ['https://*.clerk.accounts.dev', 'https://clerk.scroll0.com', 'https://accounts.scroll0.com'];
 
   app.use(
     helmet({
