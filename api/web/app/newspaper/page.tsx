@@ -96,11 +96,6 @@ export default function NewspaperPage() {
   }
 
   return <main className="newspaper-app">
-    <header className="newspaper-topbar">
-      <a className="brand" href="/"><span className="brand-mark">S0</span><span>scroll0</span></a>
-      <a className="newspaper-back" href="/">Back to reading desk</a>
-    </header>
-
     <nav className="newspaper-controls" aria-label="Newspaper controls">
       <div className="page-controls"><button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>← Previous</button><span>Page {currentPage} of {pageCount}</span><button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === pageCount}>Next →</button></div>
       <div className="zoom-controls"><span>View</span><button onClick={() => setZoom((value) => Math.max(.7, Number((value - .1).toFixed(2))))} aria-label="Zoom out">−</button><strong>{Math.round(zoom * 100)}%</strong><button onClick={() => setZoom((value) => Math.min(1.35, Number((value + .1).toFixed(2))))} aria-label="Zoom in">+</button><button onClick={() => setZoom(1)}>Reset</button></div>
