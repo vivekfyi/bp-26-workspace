@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { UserButton, useAuth, useUser } from '@clerk/nextjs';
+import { AuthControls } from '../../../components/auth-controls';
 
 type Topic = { slug: string; name: string };
 type Feed = {
@@ -112,7 +113,7 @@ export default function AdminFeedsPage() {
   }
 
   return <main className="admin-shell">
-    <header className="admin-header"><a className="brand" href="/"><span className="brand-mark">SZ</span><span>Scroll Zero</span></a><div className="admin-header-actions"><span className="admin-user">{user?.primaryEmailAddress?.emailAddress}</span><UserButton /><a className="quiet-link" href="/">Back to reading room ↗</a></div></header>
+    <header className="admin-header"><a className="brand" href="/"><span className="brand-mark">SZ</span><span>Scroll Zero</span></a><div className="admin-header-actions"><span className="admin-user">{user?.primaryEmailAddress?.emailAddress}</span><UserButton /><AuthControls /><a className="quiet-link" href="/">Back to reading room ↗</a></div></header>
     <section className="admin-hero"><div><p className="eyebrow">Admin · Sources</p><h1>Manage your<br /><em>signal.</em></h1><p>Keep the reading room focused by choosing exactly which feeds are active.</p></div><button className="button button-dark" onClick={syncFeeds} disabled={syncing}>{syncing ? 'Syncing…' : 'Sync all feeds'}</button></section>
     {message ? <div className="admin-success">{message}</div> : null}{error ? <div className="notice">{error}</div> : null}
     <section className="admin-grid">

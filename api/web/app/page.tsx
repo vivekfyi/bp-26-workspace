@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AuthControls } from '../components/auth-controls';
 
 type Topic = { slug: string; name: string };
 type Source = { name: string; category?: string | null; licenseType?: string | null; siteUrl?: string | null; topics: Topic[] };
@@ -150,6 +151,7 @@ export default function HomePage() {
         <div className="topbar-actions">
           <span className={`status ${health?.status === 'ok' ? 'online' : ''}`}><span className="status-dot" /> {health?.status === 'ok' ? 'Systems clear' : 'Checking systems'}</span>
           <button className="button button-dark" onClick={triggerSync} disabled={syncing}>{syncing ? 'Syncing…' : 'Sync sources'}</button>
+          <AuthControls />
         </div>
       </header>
 
