@@ -153,8 +153,8 @@ export default function NewspaperPage() {
           {sectionIndex === 0 ? <div className="newspaper-masthead"><span>Daily edition</span><strong>SCROLL ZERO</strong><span>Less feed. More signal.</span></div> : <div className="newspaper-continuation">Continued from the reading desk · Edition {sectionIndex + 1}</div>}
           <div className="newspaper-rule" />
           <div className="newspaper-grid">
-            <div className="newspaper-lead">{story(lead, 'lead-story')}{lowerStories.slice(0, 1).map((article) => story(article, 'lead-followup'))}</div>
-            <div className="newspaper-side">{sideStories.map((article) => story(article))}{lowerStories.slice(1).map((article) => story(article, 'side-followup'))}</div>
+            {story(lead, 'lead-story')}
+            <div className="newspaper-flow">{[...sideStories, ...lowerStories].map((article) => story(article))}</div>
           </div>
         </div>;
       })}
