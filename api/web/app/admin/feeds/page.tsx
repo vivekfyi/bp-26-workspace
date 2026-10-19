@@ -23,7 +23,7 @@ type Feed = {
 const emptyForm = { name: '', feedUrl: '', siteUrl: '', category: 'Technology', language: 'en', trustScore: 80, licenseType: 'MIXED_UNKNOWN', topicSlugs: [] as string[] };
 
 export default function AdminFeedsPage() {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -56,6 +56,8 @@ export default function AdminFeedsPage() {
   useEffect(() => { void load(); }, [load]);
 
   async function authenticatedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+    if (!isLoaded) throw new Error('Clerk is still loading. Please try again.');
+    if (!isSignedIn) throw new Error('You are signed out. Please sign in again.');
     const token = await getToken();
     if (!token) throw new Error('Your Clerk session is not ready. Please try again.');
     const headers = new Headers(init.headers);
