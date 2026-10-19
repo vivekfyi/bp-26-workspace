@@ -181,10 +181,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      <section className="hero hero-compact">
-        <div><p className="eyebrow">The reading room</p><h1>Browse better.<br /><em>Read deeper.</em></h1><p className="hero-copy">Your curated articles, distilled into one calm place to discover and read.</p></div>
-        <div className="hero-note"><span>✦</span><p>{total || articles.length} stories<br /><strong>in your queue.</strong></p></div>
-      </section>
+      <div className="edition-line"><span className="edition-name">The daily edition</span><span>{total || articles.length} stories · Less feed. More signal.</span></div>
 
       <section className="toolbar">
         <div className="filters" aria-label="Filter articles by category">{categories.map((item) => <button key={item} className={`filter ${category === item ? 'active' : ''}`} onClick={() => setCategory(item)}>{item}</button>)}</div>
