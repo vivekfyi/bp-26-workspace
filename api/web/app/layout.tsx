@@ -13,7 +13,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="en">
-      <body><ClerkProvider publishableKey={publishableKey}><ClerkDiagnostics />{children}</ClerkProvider></body>
+      <body><ClerkProvider dynamic publishableKey={publishableKey}><ClerkDiagnostics />{children}</ClerkProvider></body>
     </html>
   );
 }
