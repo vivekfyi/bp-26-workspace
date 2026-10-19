@@ -84,25 +84,28 @@ export class AiEnrichmentService {
   }
 
   private removeLeadingMetadata(fullText: string): string {
-    const paragraphs = fullText
-      .split(/\n{2,}/)
-      .map((paragraph) => paragraph.trim())
+    const sentences = fullText
+      .replace(/\s+/g, ' ')
+      .trim()
+      .split(/(?<=[.!?])\s+/)
       .filter(Boolean);
+    let firstArticleSentence = 0;
 
-    while (paragraphs.length > 1) {
-      const first = paragraphs[0];
-      if (!first) break;
-      const isByline = /^by\s+[A-Z]/i.test(first);
+    while (firstArticleSentence < sentences.length && firstArticleSentence < 6) {
+      const sentence = sentences[firstArticleSentence];
+      if (!sentence) break;
+
+      const isByline = /^by\s+[A-Z]/i.test(sentence);
       const isAuthorBio =
-        /\b(?:is|was)\s+(?:the\s+)?(?:\w+\s+){0,3}(?:editor|writer|reporter|journalist|correspondent|author)\b/i.test(first) ||
-        /\bcovered\s+(?:the\s+)?(?:tech|technology|industry|news)\b.{0,80}\b(?:years?|decades?)\b/i.test(first) ||
-        /\bknows?\s+a\s+thing\s+or\s+two\s+about\b/i.test(first);
+        /\b(?:is|was)\b[^.!?]{0,100}\b(?:editor|writer|reporter|journalist|correspondent|author)\b/i.test(sentence) ||
+        /\bcovered\b[^.!?]{0,100}\b(?:years?|decades?)\b/i.test(sentence) ||
+        /\bknows?\s+a\s+thing\s+or\s+two\s+about\b/i.test(sentence);
 
       if (!isByline && !isAuthorBio) break;
-      paragraphs.shift();
+      firstArticleSentence += 1;
     }
 
-    return paragraphs.join('\n\n') || fullText;
+    return sentences.slice(firstArticleSentence).join(' ') || fullText;
   }
 
   private fallbackEnrichment(fullText: string, sourceCategory: string): EnrichedArticle {
