@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
+import ClerkDiagnostics from '../components/clerk-diagnostics';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -12,7 +13,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="en">
-      <body><ClerkProvider publishableKey={publishableKey}>{children}</ClerkProvider></body>
+      <body><ClerkProvider publishableKey={publishableKey}><ClerkDiagnostics />{children}</ClerkProvider></body>
     </html>
   );
 }
