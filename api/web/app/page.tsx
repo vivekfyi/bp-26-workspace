@@ -176,7 +176,7 @@ export default function HomePage() {
         <article className="reader-panel">
           {selectedArticle ? <>
             <div className="reader-topline"><span className="category-label">{selectedArticle.source.category ?? 'Featured'}</span><span>{formatDate(selectedArticle.publishedAt)} · {selectedArticle.readingTimeMinutes ?? 5} min read</span></div>
-            <h2>{selectedArticle.title}</h2>
+            <h2>{selectedArticle.title}</h2>{selectedArticle.leadImageUrl ? <img className="reader-image" src={selectedArticle.leadImageUrl} alt="" loading="lazy" /> : null}
             <div className="reader-source"><span className="source-avatar">{selectedArticle.source.name.slice(0, 1)}</span><span><strong>{selectedArticle.source.name}</strong><small>{selectedArticle.author ? `By ${selectedArticle.author}` : 'Curated source'}</small></span></div>
             <div className="reader-actions"><a className="button button-dark" href={selectedArticle.originalUrl} target="_blank" rel="noreferrer">Open original ↗</a>{selectedArticle.source.siteUrl ? <a className="quiet-link" href={selectedArticle.source.siteUrl} target="_blank" rel="noreferrer">Visit source</a> : null}</div>
             <div className="summary-box"><p className="eyebrow">In brief</p><p>{selectedArticle.summaryShort ?? 'This article has not been summarized yet.'}</p></div>

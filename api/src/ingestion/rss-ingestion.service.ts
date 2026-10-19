@@ -90,6 +90,7 @@ export class RssIngestionService {
             sourceLicenseType: source.licenseType,
             sourceLanguage: source.language,
             rssContent: this.resolveSnippet(entry),
+            rssImageUrl: this.resolveImageUrl(entry),
           });
 
           summary.enqueued += 1;
@@ -130,6 +131,7 @@ export class RssIngestionService {
         sourceLicenseType: source.licenseType,
         sourceLanguage: source.language,
         rssContent: null,
+        rssImageUrl: null,
       });
       const result = await this.prismaService.article.findUnique({ where: { id: article.id }, select: { status: true } });
       if (result?.status === ArticleStatus.PROCESSED) processed += 1;
@@ -146,6 +148,7 @@ export class RssIngestionService {
     sourceLicenseType: string;
     sourceLanguage: string;
     rssContent: string | null;
+    rssImageUrl: string | null;
   }): Promise<void> {
     const article = await this.prismaService.article.findUnique({
       where: { id: payload.articleId },
@@ -168,7 +171,7 @@ export class RssIngestionService {
         where: { id: article.id },
         data: {
           author: extracted.author,
-          leadImageUrl: extracted.leadImageUrl,
+          leadImageUrl: extracted.leadImageUrl ?? article.leadImageUrl ?? payload.rssImageUrl,
           fullText: extracted.fullText,
           summaryShort: enriched.summaryShort,
           summaryBullets: enriched.summaryBullets,
@@ -276,6 +279,37 @@ export class RssIngestionService {
       this.safeString(entry.summary) ??
       null
     );
+  }
+
+  private resolveImageUrl(entry: Record<string, unknown>): string | null {
+    const candidates: unknown[] = [entry.image, entry['media:content'], entry['media:thumbnail'], entry.enclosure, entry['itunes:image']];
+    for (const candidate of candidates) {
+      for (const value of Array.isArray(candidate) ? candidate : [candidate]) {
+        const url = typeof value === 'string'
+          ? value
+          : value && typeof value === 'object'
+            ? this.safeString((value as Record<string, unknown>).url) ?? this.safeString((value as Record<string, unknown>).href) ?? this.safeString((value as Record<string, unknown>)['@_url'])
+            : null;
+        if (!url) continue;
+        try {
+          const parsed = new URL(url);
+          if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return parsed.toString();
+        } catch {
+          // Ignore malformed feed image values.
+        }
+      }
+    }
+
+    const imageMatch = this.resolveSnippet(entry)?.match(/<img[^>]+src=["']([^"']+)["']/i);
+    if (imageMatch?.[1]) {
+      try {
+        const parsed = new URL(imageMatch[1]);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return parsed.toString();
+      } catch {
+        // Ignore malformed HTML image values.
+      }
+    }
+    return null;
   }
 
   private safeString(value: unknown): string | null {
