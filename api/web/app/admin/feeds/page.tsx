@@ -87,9 +87,15 @@ export default function AdminFeedsPage() {
 
   async function removeFeed(feed: Feed) {
     if (!window.confirm(`Delete ${feed.name}? Its imported articles will also be removed.`)) return;
-    const response = await authenticatedFetch(`/api/sources/${feed.id}`, { method: 'DELETE' });
-    if (!response.ok) { setError('Could not delete feed.'); return; }
-    setMessage('Feed deleted.'); await load();
+    setError(''); setMessage('');
+    try {
+      const response = await authenticatedFetch(`/api/sources/${feed.id}`, { method: 'DELETE' });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(data?.message ?? `Delete failed (${response.status}).`);
+      setMessage('Feed deleted.'); await load();
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Could not delete feed.');
+    }
   }
 
   async function toggleActive(feed: Feed) {
