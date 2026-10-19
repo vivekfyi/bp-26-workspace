@@ -21,6 +21,35 @@ type ArticleResponse = { items: Article[]; pagination: { total: number } };
 const SECTION_SIZE = 6;
 const API_PAGE_SIZE = 20;
 
+function requestJson<T>(url: string, signal?: AbortSignal | null): Promise<T> {
+  if (typeof window !== 'undefined' && typeof window.fetch === 'function') {
+    return window.fetch(url, { cache: 'no-store', signal }).then(async (response) => {
+      if (!response.ok) throw new Error('The newspaper could not be loaded.');
+      return (await response.json()) as T;
+    });
+  }
+
+  return new Promise<T>((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.onreadystatechange = () => {
+      if (request.readyState !== 4) return;
+      if (request.status >= 200 && request.status < 300) {
+        try {
+          resolve(JSON.parse(request.responseText) as T);
+        } catch {
+          reject(new Error('The newspaper returned invalid data.'));
+        }
+      } else {
+        reject(new Error('The newspaper could not be loaded.'));
+      }
+    };
+    request.onerror = () => reject(new Error('The newspaper could not be loaded.'));
+    if (signal) signal.addEventListener('abort', () => request.abort(), { once: true });
+    request.send();
+  });
+}
+
 function formatDate(value?: string | null) {
   if (!value) return 'Today';
   return new Intl.DateTimeFormat('en', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date(value));
@@ -39,14 +68,10 @@ export default function NewspaperPage() {
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
     setLoading(true);
     setError('');
-    void fetch(`/api/articles?page=1&limit=${API_PAGE_SIZE}`, { cache: 'no-store', signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) throw new Error('The newspaper could not be printed.');
-        return (await response.json()) as ArticleResponse;
-      })
+    void requestJson<ArticleResponse>(`/api/articles?page=1&limit=${API_PAGE_SIZE}`, controller?.signal)
       .then((data) => {
         setArticles(data.items ?? []);
         setTotal(data.pagination?.total ?? data.items?.length ?? 0);
@@ -57,7 +82,7 @@ export default function NewspaperPage() {
         setError(requestError instanceof Error ? requestError.message : 'Unable to load the newspaper.');
       })
       .finally(() => setLoading(false));
-    return () => controller.abort();
+    return () => controller?.abort();
   }, []);
 
   useEffect(() => {
@@ -73,9 +98,7 @@ export default function NewspaperPage() {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
-      const response = await fetch(`/api/articles?page=${nextApiPage}&limit=${API_PAGE_SIZE}`, { cache: 'no-store' });
-      if (!response.ok) throw new Error('More stories could not be loaded.');
-      const data = (await response.json()) as ArticleResponse;
+      const data = await requestJson<ArticleResponse>(`/api/articles?page=${nextApiPage}&limit=${API_PAGE_SIZE}`);
       setArticles((current) => {
         const existing = new Set(current.map((article) => article.id));
         return [...current, ...(data.items ?? []).filter((article) => !existing.has(article.id))];
@@ -93,6 +116,7 @@ export default function NewspaperPage() {
   useEffect(() => {
     const sentinel = loadMoreRef.current;
     if (!sentinel) return;
+    if (typeof IntersectionObserver !== 'function') return;
     const observer = new IntersectionObserver((entries) => {
       if (entries[0]?.isIntersecting) void loadMore();
     }, { rootMargin: '700px' });
@@ -159,6 +183,6 @@ export default function NewspaperPage() {
       })}
       <footer className="newspaper-footer"><span>scroll0.com/newspaper</span><span>{readIds.length} stories read · Keep going</span></footer>
     </section></div> : null}
-    <div ref={loadMoreRef} className="newspaper-load-more">{loadingMore ? 'Setting the next column…' : hasMore ? 'More stories ahead' : 'You’ve reached the end of the edition.'}</div>
+    <div ref={loadMoreRef} className="newspaper-load-more">{loadingMore ? 'Setting the next column…' : hasMore ? <button onClick={() => void loadMore}>Load more stories</button> : 'You’ve reached the end of the edition.'}</div>
   </main>;
 }
