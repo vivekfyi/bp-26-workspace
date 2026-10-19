@@ -40,7 +40,16 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  const clerkOrigins = ['https://*.clerk.accounts.dev', 'https://clerk.scroll0.com', 'https://accounts.scroll0.com'];
+  const clerkOrigins = [
+    'https://*.clerk.accounts.dev',
+    'https://clerk.scroll0.com',
+    'https://accounts.scroll0.com',
+    'https://clerk-telemetry.com',
+    'https://*.clerk-telemetry.com',
+    'https://*.protect.clerk.com',
+    'https://*.protect.clerk.com:*',
+    'https://challenges.cloudflare.com',
+  ];
 
   app.use(
     helmet({
@@ -52,11 +61,12 @@ async function bootstrap() {
           fontSrc: ["'self'", 'https://fonts.gstatic.com'],
           formAction: ["'self'"],
           frameAncestors: ["'self'"],
-          imgSrc: ["'self'", 'data:', 'https:'],
+          imgSrc: ["'self'", 'data:', 'https:', 'https://img.clerk.com'],
           objectSrc: ["'none'"],
           scriptSrc: ["'self'", "'unsafe-inline'", ...clerkOrigins, ...(isDevelopment ? ["'unsafe-eval'"] : [])],
           styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
           frameSrc: ["'self'", ...clerkOrigins],
+          workerSrc: ["'self'", 'blob:'],
           upgradeInsecureRequests: null,
         },
       },
