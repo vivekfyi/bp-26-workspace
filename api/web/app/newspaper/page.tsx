@@ -136,7 +136,7 @@ export default function NewspaperPage() {
 
   return <main className="newspaper-app">
     <nav className="newspaper-controls" aria-label="Newspaper controls">
-      <div className="edition-status"><span>{total || articles.length} stories</span><span className="read-legend"><i /> Read stories are muted</span></div>
+      <div className="edition-status"><span>{total || articles.length} stories</span><span className="read-legend" aria-label="Read stories are muted" title="Read stories are muted"><i /> Read</span></div>
       <div className="zoom-controls"><span>View</span><button onClick={() => setZoom((value) => Math.max(.7, Number((value - .1).toFixed(2))))} aria-label="Zoom out">−</button><strong>{Math.round(zoom * 100)}%</strong><button onClick={() => setZoom((value) => Math.min(1.35, Number((value + .1).toFixed(2))))} aria-label="Zoom in">+</button><button onClick={() => setZoom(1)}>Reset</button></div>
     </nav>
 
