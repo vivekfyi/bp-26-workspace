@@ -34,6 +34,24 @@ export default function AdminFeedsPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    const logAuthState = (label: string) => {
+      const clerk = (window as Window & { Clerk?: { status?: string } }).Clerk;
+      console.info('[Scroll Zero Clerk debug]', label, {
+        isLoaded,
+        isSignedIn,
+        userId: user?.id ?? null,
+        clerkStatus: clerk?.status ?? 'window.Clerk unavailable',
+      });
+    };
+
+    logAuthState('auth state changed');
+    const timeout = window.setTimeout(() => {
+      if (!isLoaded) logAuthState('still not loaded after 5 seconds');
+    }, 5000);
+    return () => window.clearTimeout(timeout);
+  }, [isLoaded, isSignedIn, user?.id]);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -55,10 +73,26 @@ export default function AdminFeedsPage() {
   useEffect(() => { void load(); }, [load]);
 
   async function authenticatedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
-    if (!isLoaded) throw new Error('Clerk is still loading. Please try again.');
-    if (!isSignedIn) throw new Error('You are signed out. Please sign in again.');
-    const token = await getToken();
-    if (!token) throw new Error('Your Clerk session is not ready. Please try again.');
+    console.info('[Scroll Zero Clerk debug] authenticated request started', { input: String(input), method: init.method ?? 'GET', isLoaded, isSignedIn });
+    if (!isLoaded) {
+      console.warn('[Scroll Zero Clerk debug] request blocked because Clerk is not loaded');
+      throw new Error('Clerk is still loading. Please try again.');
+    }
+    if (!isSignedIn) {
+      console.warn('[Scroll Zero Clerk debug] request blocked because there is no signed-in session');
+      throw new Error('You are signed out. Please sign in again.');
+    }
+    let token: string | null;
+    try {
+      token = await getToken();
+    } catch (tokenError) {
+      console.error('[Scroll Zero Clerk debug] getToken failed', tokenError);
+      throw tokenError;
+    }
+    if (!token) {
+      console.warn('[Scroll Zero Clerk debug] getToken returned no token');
+      throw new Error('Your Clerk session is not ready. Please try again.');
+    }
     const headers = new Headers(init.headers);
     headers.set('Authorization', `Bearer ${token}`);
     return fetch(input, { ...init, headers });
