@@ -288,7 +288,10 @@ export class RssIngestionService {
         const url = typeof value === 'string'
           ? value
           : value && typeof value === 'object'
-            ? this.safeString((value as Record<string, unknown>).url) ?? this.safeString((value as Record<string, unknown>).href) ?? this.safeString((value as Record<string, unknown>)['@_url'])
+            ? this.safeString((value as Record<string, unknown>).url) ??
+              this.safeString((value as Record<string, unknown>).href) ??
+              this.safeString((value as Record<string, unknown>)['@_url']) ??
+              (value.$ && typeof value.$ === 'object' ? this.safeString((value.$ as Record<string, unknown>).url) : null)
             : null;
         if (!url) continue;
         try {
