@@ -59,3 +59,10 @@ export class ClerkAdminGuard extends ClerkAuthGuard {
     super(true);
   }
 }
+
+@Injectable()
+export class ClerkSessionGuard extends ClerkAuthGuard {
+  constructor() {
+    super(false);
+  }
+}
