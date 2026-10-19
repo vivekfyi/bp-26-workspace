@@ -18,3 +18,23 @@
 @media (max-width: 780px) { .admin-shell { padding: 20px 18px 50px; }.admin-hero { display: block; padding: 55px 0 40px; }.admin-hero .button { margin-top: 25px; }.admin-grid { display: block; }.feed-list { margin-top: 15px; }.feed-card { display: block; }.feed-actions { flex-direction: row; align-items: start; margin-top: 17px; }.form-row { grid-template-columns: 1fr 90px; } }
 .admin-header-actions { display: flex; align-items: center; gap: 16px; }.admin-user { max-width: 220px; overflow: hidden; color: var(--muted); font: 10px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }.auth-page { min-height: 100vh; display: grid; place-items: center; padding: 30px; background: var(--paper); }
 .auth-loading { padding: 28px; color: var(--muted); font: 12px 'DM Mono', monospace; }
+.reading-progress { position: fixed; z-index: 20; top: 0; left: 0; height: 3px; background: var(--green); transition: width .15s linear; }
+.reader-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 18px 0 0; }
+.reader-control { min-height: 38px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); background: transparent; font: 11px 'DM Mono', monospace; }
+.reader-control:hover, .reader-control.active { color: var(--ink); border-color: var(--ink); background: white; }
+.reader-mode-toggle { color: white; border-color: var(--ink); background: var(--ink); }
+.reader-control-label { margin-left: 8px; color: var(--muted); font: 10px 'DM Mono', monospace; text-transform: uppercase; }
+.reader-font-large .article-text p:not(.eyebrow), .reader-font-large .summary-box p:last-child, .reader-font-large .takeaways ul { font-size: 18px; }
+.reader-font-xlarge .article-text p:not(.eyebrow), .reader-font-xlarge .summary-box p:last-child, .reader-font-xlarge .takeaways ul { font-size: 21px; }
+.reader-font-large .article-text p:not(.eyebrow), .reader-font-xlarge .article-text p:not(.eyebrow) { line-height: 1.8; }
+.high-contrast { --ink: #000; --muted: #333; --line: #777; --paper: #fff; --green: #063b2d; --mint: #f0f0f0; }
+.reader-mode { max-width: 820px; padding-top: 44px; }
+.reader-mode .topbar, .reader-mode .hero, .reader-mode .toolbar, .reader-mode .article-list, .reader-mode footer { display: none; }
+.reader-mode .browser-layout { display: block; }
+.reader-mode .reader-panel { min-height: calc(100vh - 88px); padding: 0 20px 80px; border: 0; background: transparent; }
+.reader-mode .reader-panel h2 { max-width: 760px; margin-top: 28px; font-size: clamp(36px, 6vw, 62px); }
+.reader-mode .reader-actions { margin-bottom: 42px; }
+.reader-mode .article-text { max-width: 680px; }
+.reader-mode .reader-controls { margin-top: 22px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+@media (max-width: 700px) { .reader-controls { gap: 6px; }.reader-control { min-height: 44px; padding: 9px 11px; }.reader-control-label { width: 100%; margin: 4px 0 0; }.reader-mode { padding: 24px 12px 40px; }.reader-mode .reader-panel { padding: 0 10px 60px; }.reader-mode .reader-panel h2 { font-size: 34px; }.article-row, .filter, .button, .quiet-link { min-height: 44px; }.reader-image { max-height: 260px; } }

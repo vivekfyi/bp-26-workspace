@@ -49,6 +49,11 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState('');
+  const [readerMode, setReaderMode] = useState(false);
+  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
+  const [highContrast, setHighContrast] = useState(false);
+  const [showImages, setShowImages] = useState(true);
+  const [readingProgress, setReadingProgress] = useState(0);
 
   const loadArticles = useCallback(async () => {
     setLoading(true);
@@ -104,6 +109,8 @@ export default function HomePage() {
 
   const selectedArticle = visibleArticles.find((article) => article.id === selectedId) ?? visibleArticles[0] ?? null;
   const activeArticleId = selectedArticle?.id ?? null;
+  const selectedBullets = listValue(articleDetail?.id === activeArticleId ? articleDetail.summaryBullets : selectedArticle?.summaryBullets);
+  const selectedParagraphs = paragraphs(articleDetail?.id === activeArticleId ? articleDetail.fullText : null);
 
   useEffect(() => {
     if (!activeArticleId) {
@@ -140,11 +147,32 @@ export default function HomePage() {
     };
   }, [activeArticleId]);
 
-  const selectedBullets = listValue(articleDetail?.id === activeArticleId ? articleDetail.summaryBullets : selectedArticle?.summaryBullets);
-  const selectedParagraphs = paragraphs(articleDetail?.id === activeArticleId ? articleDetail.fullText : null);
+  useEffect(() => {
+    const updateProgress = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      setReadingProgress(scrollable > 0 ? Math.min(100, Math.round((window.scrollY / scrollable) * 100)) : 0);
+    };
+    updateProgress();
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress);
+    return () => {
+      window.removeEventListener('scroll', updateProgress);
+      window.removeEventListener('resize', updateProgress);
+    };
+  }, [readerMode, selectedParagraphs.length]);
+
+  useEffect(() => {
+    if (!readerMode) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setReaderMode(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [readerMode]);
 
   return (
-    <main className="shell">
+    <main className={`shell ${readerMode ? 'reader-mode' : ''} ${highContrast ? 'high-contrast' : ''} reader-font-${fontSize}`}>
+      {readerMode ? <div className="reading-progress" style={{ width: `${readingProgress}%` }} aria-hidden="true" /> : null}
       <header className="topbar">
         <a className="brand" href="/"><span className="brand-mark">S0</span><span>scroll0</span></a>
         <div className="topbar-actions">
@@ -176,7 +204,16 @@ export default function HomePage() {
         <article className="reader-panel">
           {selectedArticle ? <>
             <div className="reader-topline"><span className="category-label">{selectedArticle.source.category ?? 'Featured'}</span><span>{formatDate(selectedArticle.publishedAt)} · {selectedArticle.readingTimeMinutes ?? 5} min read</span></div>
-            <h2>{selectedArticle.title}</h2>{selectedArticle.leadImageUrl ? <img className="reader-image" src={selectedArticle.leadImageUrl} alt="" loading="lazy" /> : null}
+            <div className="reader-controls" aria-label="Reader controls">
+              <button className="reader-control reader-mode-toggle" onClick={() => setReaderMode((current) => !current)}>{readerMode ? 'Exit reader' : 'Reader mode'}</button>
+              <span className="reader-control-label">Text</span>
+              <button className="reader-control" aria-label="Decrease text size" onClick={() => setFontSize('normal')}>A−</button>
+              <button className="reader-control" aria-label="Default text size" onClick={() => setFontSize('large')}>A</button>
+              <button className="reader-control" aria-label="Increase text size" onClick={() => setFontSize('xlarge')}>A+</button>
+              <button className={`reader-control ${highContrast ? 'active' : ''}`} onClick={() => setHighContrast((current) => !current)}>{highContrast ? 'Normal contrast' : 'High contrast'}</button>
+              <button className={`reader-control ${showImages ? '' : 'active'}`} onClick={() => setShowImages((current) => !current)}>{showImages ? 'Hide image' : 'Show image'}</button>
+            </div>
+            <h2>{selectedArticle.title}</h2>{showImages && selectedArticle.leadImageUrl ? <img className="reader-image" src={selectedArticle.leadImageUrl} alt="" loading="lazy" /> : null}
             <div className="reader-source"><span className="source-avatar">{selectedArticle.source.name.slice(0, 1)}</span><span><strong>{selectedArticle.source.name}</strong><small>{selectedArticle.author ? `By ${selectedArticle.author}` : 'Curated source'}</small></span></div>
             <div className="reader-actions"><a className="button button-dark" href={selectedArticle.originalUrl} target="_blank" rel="noreferrer">Open original ↗</a>{selectedArticle.source.siteUrl ? <a className="quiet-link" href={selectedArticle.source.siteUrl} target="_blank" rel="noreferrer">Visit source</a> : null}</div>
             <div className="summary-box"><p className="eyebrow">In brief</p><p>{selectedArticle.summaryShort ?? 'This article has not been summarized yet.'}</p></div>
