@@ -17,15 +17,20 @@ export class AiEnrichmentService {
   }
 
   async enrichArticle(fullText: string, sourceCategory: string): Promise<EnrichedArticle> {
+    const articleText = this.removeLeadingMetadata(fullText);
+
     if (!this.openaiClient) {
-      return this.fallbackEnrichment(fullText, sourceCategory);
+      return this.fallbackEnrichment(articleText, sourceCategory);
     }
 
     const prompt = [
-      'You are enriching an article for a curation app.',
+      'You are enriching the article body for a curation app.',
+      'Summarize the article topic and substance, not the author or publication metadata.',
+      'Ignore bylines, author biographies, credentials, introductions about the writer, and promotional text.',
+      'Focus on the main claim, important facts, events, evidence, decisions, technical details, and implications.',
       'Return strict JSON with keys: summary_short, summary_bullets, tags.',
-      'summary_short: around 50 words.',
-      'summary_bullets: exactly 3 concise strings.',
+      'summary_short: around 50 words explaining what the article is actually about and why it matters.',
+      'summary_bullets: exactly 3 concise, specific takeaways from the article content.',
       'tags: 3-6 short lowercase tags.',
       `Primary category context: ${sourceCategory}`,
     ].join('\n');
@@ -38,7 +43,7 @@ export class AiEnrichmentService {
         { role: 'system', content: prompt },
         {
           role: 'user',
-          content: `Article:\n${fullText.slice(0, 12000)}`,
+          content: `Article body:\n${articleText.slice(0, 12000)}`,
         },
       ],
     });
@@ -50,7 +55,7 @@ export class AiEnrichmentService {
       parsed = JSON.parse(raw) as Partial<EnrichedArticle>;
     } catch {
       this.logger.warn('OpenAI returned non-JSON payload; using fallback enrichment');
-      return this.fallbackEnrichment(fullText, sourceCategory);
+      return this.fallbackEnrichment(articleText, sourceCategory);
     }
 
     const summaryBullets = Array.isArray(parsed.summaryBullets)
@@ -68,7 +73,7 @@ export class AiEnrichmentService {
     const summaryShort = typeof parsed.summaryShort === 'string' ? parsed.summaryShort.trim() : '';
 
     if (!summaryShort || summaryBullets.length < 3 || tags.length < 3) {
-      return this.fallbackEnrichment(fullText, sourceCategory);
+      return this.fallbackEnrichment(articleText, sourceCategory);
     }
 
     return {
@@ -76,6 +81,28 @@ export class AiEnrichmentService {
       summaryBullets,
       tags,
     };
+  }
+
+  private removeLeadingMetadata(fullText: string): string {
+    const paragraphs = fullText
+      .split(/\n{2,}/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean);
+
+    while (paragraphs.length > 1) {
+      const first = paragraphs[0];
+      if (!first) break;
+      const isByline = /^by\s+[A-Z]/i.test(first);
+      const isAuthorBio =
+        /\b(?:is|was)\s+(?:the\s+)?(?:\w+\s+){0,3}(?:editor|writer|reporter|journalist|correspondent|author)\b/i.test(first) ||
+        /\bcovered\s+(?:the\s+)?(?:tech|technology|industry|news)\b.{0,80}\b(?:years?|decades?)\b/i.test(first) ||
+        /\bknows?\s+a\s+thing\s+or\s+two\s+about\b/i.test(first);
+
+      if (!isByline && !isAuthorBio) break;
+      paragraphs.shift();
+    }
+
+    return paragraphs.join('\n\n') || fullText;
   }
 
   private fallbackEnrichment(fullText: string, sourceCategory: string): EnrichedArticle {
